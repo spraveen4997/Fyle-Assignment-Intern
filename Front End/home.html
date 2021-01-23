@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Banking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>            
+    
+    <style>
+        
+        .tit{
+            font-size: 1.75em;
+            color: black;
+            padding: 0em 1em;
+            letter-spacing: 0.3em;
+        }
+        .tb-fs{
+            font-size: 0.9em;
+            background: white;
+        }        
+        .thead-cust{
+            background:rgb(75, 75, 75);
+            color: white;
+        }
+        body{
+            background: whitesmoke;
+        }
+        .pagenumber{
+            background: transparent;
+            color: gainsboro;
+            border: navajowhite;
+            cursor: pointer;
+            margin: 0em 0.5em;
+        }
+        .pg-active{
+            background: #7f7f7f;
+            color: white;
+        }
+    </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="tit">THE BANK</div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+              <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <div class="form-row align-items-center">
+                        <div class="col-auto my-1">
+                        <label class="mr-sm-2" for="inlineFormCustomSelect">Bank Branches</label>
+                        <select class="custom-select mr-sm-2" id="branchSelect">
+                            <option value="banglore" selected>Banglore</option>
+                            <option value="chennai">Chennai</option>
+                            <option value="hyderabad">Hyderabad</option>
+                            <option value="kolkata">Kolkata</option>
+                            <option value="mumbai">Mumbai</option>
+                        </select>
+                        </div>
+                    </div>
+
+                </li>
+            
+                <li class="nav-item">
+                    <div class="form-row align-items-center ml-2 mr-2">
+                        <div class="col-auto my-1">
+                            <label class="mr-sm-2" for="inlineFormCustomSelect">Get Records</label>
+                            <input type="number" value="10" id="limit" class="form-control d-block">
+                        </div>
+                    </div>
+
+                </li>
+              </ul>
+              <div class="form-inline w-100 pt-1">
+                <input class="form-control w-100 mt-4" type="search" placeholder="Search" id="searchdata">
+              </div>
+            </div>
+          </nav>
+          <div class="container-fluid">
+              <div class="table">
+
+              
+              <table class="table table-hover tb-fs">
+                  <thead class="thead-cust">
+                      <tr>
+                          <td colspan="100" class="p-1">
+                            <div class="d-flex justify-content-between">
+                                <div class="ml-3">
+                                    <label>Page Number</label>
+                                    <div id="pagination">
+                                        <button value="1" class="pagenumber">1</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="">show results per page</label>
+                                    <input type="number" value="" id="limitResults" class="form-control d-block">
+                                </div>  
+                            </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td>S. No</td>
+                          <td>Bank Name</td>
+                          <td>IFSC</td>
+                          <td>Branch</td>
+                          <td>City</td>
+                          <td>District</td>
+                          <td>State</td>
+                          <td>Address</td>
+                      </tr>
+                      <tr>
+                          <td colspan="100" id="loadingDiv">
+                            <div class="spinner-border" role="status"></div>
+                            <label class="ml-1">Loading...</label>
+                          </td>
+                      </tr>
+                  </thead>
+                  <tbody  id="tabdetails"> 
+                  </tbody>
+
+                </table>
+            </div>
+          </div>
+    </body>
+    <script>
+        domain="https://fyle-assign-be.herokuapp.com/"
+
+        $( document ).ready(function() {
+            v=$("#limit").val()
+            $("#limitResults").val(v)
+            sendRequest("banglore",v,0)
+        });
+
+        $("#limit").on('change', function() {
+            q=$("#branchSelect").val()
+            limit=$("#limit").val()
+            $("#limitResults").val(limit)
+            sendRequest(q,limit,0)
+
+        });
+        $("#branchSelect").on('change', function() {
+            q=$("#branchSelect").val()
+            $("#searchdata").val("")
+            limit=$("#limit").val()
+            sendRequest(q,limit,0)
+        });
+
+        $('#searchdata').on('input', function() {
+            q=$("#searchdata").val()
+            limit=$("#limit").val()
+            $("#limitResults").val(limit)
+            setPaginationDiv(1)
+            if (q!=""){
+                sendSearchRequest(q,limit,0)
+                
+            }
+        });
+
+        var $loading = $('#loadingDiv').hide();
+        $(document)
+          .ajaxStart(function () {
+            $loading.show();
+          })
+          .ajaxStop(function () {
+            $loading.hide();
+          });
+
+            function sendRequest(q,limit,offset){
+
+                $.ajax({
+                type: "GET",
+                url: domain+"api/branches/autocomplete?q="+q+"&limit="+limit+"&offset="+offset+"",
+                dataType: "json"
+                }).done(function(results){
+                
+                $("#tabdetails").html("");
+                $("#limitResults").attr('max',results.length);
+                if (results==""){
+                    $("#tabdetails").append("<tr><td colspan='100' class='text-center'>No Results Found</td></tr>");
+                    return;
+                }
+                for (res in results){
+                    $("#tabdetails").append("<tr id='row_"+(parseInt(res)+1)+"'><td>"+(parseInt(res)+1)
+                        +"</td><td>"+results[res]['bank_name']
+                        +"</td><td>"+results[res]['ifsc']
+                        +"</td><td>"+results[res]['branch']
+                        +"</td><td>"+results[res]['city']
+                        +"</td><td>"+results[res]['district']
+                        +"</td><td>"+results[res]['state']
+                        +"</td><td>"+results[res]['address']+"</td></tr>");
+                    }
+                });
+            }
+            function sendSearchRequest(q,limit,offset){
+
+                $.ajax({
+                type: "GET",
+                url: domain+"api/branches/?q="+q+"&limit="+limit+"&offset="+offset+"",
+                dataType: "json"
+                }).done(function(results){
+                
+                            
+                $("#tabdetails").html("");
+                $("#limitResults").attr('max',results.length);
+                if (results==""){
+                    $("#tabdetails").append("<tr><td colspan='100' class='text-center'>No Results Found</td></tr>");
+                    return;
+                }
+                $("#limitResults").attr('max',results.length);
+                for (res in results){
+                    
+                    $("#tabdetails").append("<tr id='row_"+(parseInt(res)+1)+"'><td>"+(parseInt(res)+1)
+                        +"</td><td>"+results[res]['bank_name']
+                        +"</td><td>"+results[res]['ifsc']
+                        +"</td><td>"+results[res]['branch']
+                        +"</td><td>"+results[res]['city']
+                        +"</td><td>"+results[res]['district']
+                        +"</td><td>"+results[res]['state']
+                        +"</td><td>"+results[res]['address']+"</td></tr>");
+                    }
+                });
+            }
+
+            $("#limitResults").on('change', function() {
+                tab_len=$('#tabdetails tr').length;
+                limit=$("#limitResults").val()
+                no_of_pages=Math.ceil(tab_len/limit);
+                setPaginationDiv(no_of_pages)
+                showResultsPage(1)
+            });
+            function setPaginationDiv(no_of_pages){
+                $("#pagination").html("")
+                for (i=1;i<=no_of_pages;i++){
+                    $("#pagination").append("<button value="+i+" class='pagenumber' >"+i+"</button>")
+                }
+            }
+            function showResultsPage(pagenumber){
+                start=$("#limitResults").val()*(pagenumber-1)+1;
+                end=$("#limitResults").val()*pagenumber;
+                $("#tabdetails").children().hide(); 
+                for (i=start;i<=end;i++){
+                    $("#row_"+i+"").show();
+                }
+            }
+            $(document).on('click', '.pagenumber', function(){
+                showResultsPage($(this).val())
+            });
+        
+        
+
+        </script>
+</html>

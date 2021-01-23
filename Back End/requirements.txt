@@ -1,0 +1,14 @@
+Django==3.0.4
+django-cors-headers==3.6.0
+django-extensions==3.0.8
+django-secure==1.0.2
+django-sslserver==0.22
+djangorestframework==3.12.2
+docutils==0.15.2
+numpy==1.16.5
+pandas==0.25.1
+protobuf==3.12.2
+psycopg2==2.8.6
+sqlparse==0.3.1
+gunicorn==20.0.4
+whitenoise==5.2.0
